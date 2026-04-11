@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContactFormPopup from "@/components/sections/ContactForm";
 import FloatingContact from "@/components/FloatingContact";
+import { checkExistingLead } from "@/app/actions/submit-lead"; // Ensure this is imported
 
 // Fonts
 const inter = Inter({
@@ -27,17 +28,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [userIp, setUserIp] = useState("");
 
   const closePopup = () => setIsPopupOpen(false);
 
-  // Trigger on every mount (refresh)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPopupOpen(true);
-    }, 3000); // 3-second delay
+    async function handleAutoPopup() {
+      try {
+        // 1. Fetch current visitor IP
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const { ip } = await ipRes.json();
+        setUserIp(ip);
 
-    return () => clearTimeout(timer); // Cleanup on unmount
-  }, []); // Empty dependency array ensures this runs once per refresh
+        // 2. Check if this IP already exists in the database
+        const result = await checkExistingLead(ip);
+
+        // 3. ONLY trigger the popup if the lead DOES NOT exist
+        if (!result.exists) {
+          const timer = setTimeout(() => {
+            setIsPopupOpen(true);
+          }, 3000); // 3-second delay
+
+          return () => clearTimeout(timer);
+        } else {
+          console.log("Lead already registered. Auto-popup suppressed.");
+        }
+      } catch (err) {
+        console.error("Popup logic error:", err);
+      }
+    }
+
+    handleAutoPopup();
+  }, []);
 
   return (
     <html
@@ -67,7 +89,7 @@ export default function RootLayout({
         
         <AnimatePresence mode="wait">
           {isPopupOpen && (
-            <ContactFormPopup onClose={closePopup} />
+            <ContactFormPopup onClose={closePopup} userIp={userIp} />
           )}
         </AnimatePresence>
 
