@@ -9,8 +9,20 @@ const supabase = createClient(
 );
 
 /**
+ * Helper to get Browser Name from User Agent
+ */
+function getBrowserName(ua: string) {
+  if (ua.includes("Firefox")) return "Firefox";
+  if (ua.includes("SamsungBrowser")) return "Samsung Browser";
+  if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+  if (ua.includes("Edge")) return "Edge";
+  if (ua.includes("Chrome")) return "Chrome";
+  if (ua.includes("Safari")) return "Safari";
+  return "Unknown";
+}
+
+/**
  * Checks if a lead already exists for a specific IP address.
- * Used by the frontend to decide whether to show the form or the success message.
  */
 export async function checkExistingLead(ip: string) {
   try {
@@ -36,58 +48,88 @@ export async function submitLead(formData: FormData) {
   try {
     const rawData = Object.fromEntries(formData);
     
-    // 1. Destructure to remove honeypot and separate key fields
-    const { website_url, ...payload } = rawData;
-
     // Honeypot check
-    if (website_url) {
+    if (rawData.website_url) {
       return { success: false, error: "Bot detected" };
     }
 
-    const phone = payload.phone as string;
-    const location = payload.location as string;
-    const ip_address = payload.ip_address as string;
+    const ua = (rawData.user_agent as string) || ""; 
+    const browserName = getBrowserName(ua);
 
-    // 2. Server-side Duplicate Check (by Phone + Location)
-    const { data: existingLead } = await supabase
+    /**
+     * Schema-Perfect Mapping
+     * We exclude 'user_agent' here because it doesn't exist in your SQL table.
+     */
+    const leadData = {
+      full_name: rawData.full_name as string,
+      phone: rawData.phone as string,
+      email: (rawData.email as string) || null,
+      area_sqft: (rawData.area_sqft as string) || null, 
+      location: rawData.location as string,
+      urgency: rawData.urgency as string,
+      message: (rawData.message as string) || null,
+      property_title: (rawData.property_title as string) || null,
+      device_type: (rawData.device_type as string) || null,
+      os: (rawData.os as string) || null,
+      browser: browserName,
+      page_url: (rawData.page_url as string) || null,
+      ip_address: (rawData.ip_address as string) || null,
+    };
+
+    // 1. Server-side Duplicate Check 
+    // Uses your unique_lead_entry constraint (phone, location, ip_address)
+    const { data: existingLead, error: checkError } = await supabase
       .from("enquiries")
       .select("id")
-      .eq("phone", phone)
-      .eq("location", location)
+      .eq("phone", leadData.phone)
+      .eq("location", leadData.location)
+      .eq("ip_address", leadData.ip_address)
       .maybeSingle();
 
+    if (checkError) throw checkError;
+
     if (existingLead) {
-      // If user submits again, bump status to Urgent
-      await supabase
+      // Update existing record
+      const { error: updateError } = await supabase
         .from("enquiries")
-        .update({ status: "Urgent" })
+        .update({ 
+          ...leadData,
+          status: "Urgent", 
+          // Note: updated_at is usually automatic in Supabase, but we can update it if you have the column
+        })
         .eq("id", existingLead.id);
         
+      if (updateError) throw updateError;
       return { success: true, duplicate: true };
     }
 
-    // 3. Insert into Database
-    const { error: dbError } = await supabase.from("enquiries").insert([
-      {
-        ...payload,
-        status: "New",
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    // 2. Insert New Record
+    const { error: dbError } = await supabase
+      .from("enquiries")
+      .insert([
+        {
+          ...leadData,
+          lead_source: "Website Pop-up",
+          status: "New",
+        },
+      ]);
     
-    if (dbError) {
-      // Handle Postgres unique constraint (code 23505)
-      if (dbError.code === "23505") return { success: true, duplicate: true };
-      throw dbError;
+    if (dbError) throw dbError;
+
+    // 3. Email Notification
+    try {
+      await sendLeadEmail({ ...leadData, lead_source: "Website Pop-up" });
+    } catch (emailErr) {
+      console.error("Email notification failed:", emailErr);
     }
 
-    // 4. Send Email Notification
-    // We pass the payload (containing name, phone, location, etc.) to the mailer
-    await sendLeadEmail(payload);
-
     return { success: true, duplicate: false };
+
   } catch (err: any) {
-    console.error("Submission Error:", err.message || err);
-    return { success: false, error: "Failed to process request." };
+    console.error("CRITICAL SUBMISSION ERROR:", err.message || err);
+    return { 
+      success: false, 
+      error: "Failed to process request." 
+    };
   }
 }

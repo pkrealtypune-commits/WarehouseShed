@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { submitLead, checkExistingLead } from "@/app/actions/submit-lead";
+import { submitLead } from "@/app/actions/submit-lead";
 import { 
   CheckCircle2, 
   Loader2, 
@@ -10,7 +10,10 @@ import {
   Phone, 
   X, 
   AlertCircle,
-  MessageCircle 
+  MessageCircle,
+  Mail,
+  Maximize,
+  MapPin
 } from "lucide-react";
 
 const warehouseLocations = ["Chakan", "Talegaon", "Wagholi", "Kesananda", "Lohegaon", "Lonikand"];
@@ -19,79 +22,72 @@ const urgencyOptions = ["Immediate", "Within 30 Days", "1-3 Months", "Planning S
 const WHATSAPP_NUMBER = "919765464333";
 const GOOGLE_ADS_ID = "AW-123456789/your-label"; 
 
-export default function ContactFormPopup({ onClose, propertyTitle, userIp: initialIp }: { onClose: () => void; propertyTitle?: string; userIp?: string }) {
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isDuplicate, setIsDuplicate] = useState(false);
+interface PopupProps {
+  onClose: () => void;
+  propertyTitle?: string;
+  userIp?: string;
+  initialIsSuccess?: boolean; // New Prop to receive status from layout
+}
+
+export default function ContactFormPopup({ 
+  onClose, 
+  propertyTitle, 
+  userIp, 
+  initialIsSuccess = false 
+}: PopupProps) {
+  // Use status pre-fetched by the layout to avoid showing a loader on mount
+  const [isSuccess, setIsSuccess] = useState(initialIsSuccess);
+  const [isDuplicate, setIsDuplicate] = useState(initialIsSuccess);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isCheckingIP, setIsCheckingIP] = useState(true);
-  const [resolvedIp, setResolvedIp] = useState(initialIp || "");
   const [isPending, startTransition] = useTransition();
 
-  // --- Step 1: Resolve IP and Check Database ---
-  useEffect(() => {
-    async function verifyLead() {
-      let currentIp = resolvedIp;
-
-      // If no IP was passed from props, fetch it client-side
-      if (!currentIp) {
-        try {
-          const res = await fetch("https://api.ipify.org?format=json");
-          const data = await res.json();
-          currentIp = data.ip;
-          setResolvedIp(currentIp);
-        } catch (error) {
-          console.error("Failed to fetch IP:", error);
-        }
-      }
-
-      // Check Supabase
-      if (currentIp) {
-        const result = await checkExistingLead(currentIp);
-        if (result.exists) {
-          setIsSuccess(true);
-          setIsDuplicate(true);
-        }
-      }
-      setIsCheckingIP(false);
-    }
-    verifyLead();
-  }, [initialIp]);
-
-  // --- Step 2: Handle Form Submission ---
-  async function handleSubmit(formData: FormData) {
-    setErrorMessage("");
-    
-    const ua = navigator.userAgent;
-    formData.append("device_type", /Mobile|Android|iP(hone|od)/i.test(ua) ? "Mobile" : "Desktop");
-    formData.append("os", /android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : /Win/i.test(ua) ? "Windows" : "Unknown");
-    formData.append("page_url", window.location.href);
-    formData.append("property_title", propertyTitle || "General Inquiry");
-    
-    // Use the resolved IP (either from props or fetch)
-    if (resolvedIp) formData.append("ip_address", resolvedIp);
-
-    startTransition(async () => {
-      try {
-        const result = await submitLead(formData);
-        
-        if (result.success) {
-          if (typeof window !== "undefined" && (window as any).gtag) {
-            (window as any).gtag('event', 'conversion', {
-              'send_to': GOOGLE_ADS_ID,
-              'value': 1.0,
-              'currency': 'INR'
-            });
-          }
-          setIsDuplicate(result.duplicate || false);
-          setIsSuccess(true);
-        } else {
-          setErrorMessage(result.error || "Submission failed.");
-        }
-      } catch (err) {
-        setErrorMessage("Network error. Please try again.");
-      }
-    });
+ async function handleSubmit(formData: FormData) {
+  setErrorMessage("");
+  
+  const ua = navigator.userAgent;
+  
+  // 1. Clean Numeric Data: Ensure area_sqft is a valid number string or null
+  const areaValue = formData.get("area_sqft");
+  if (!areaValue || areaValue === "") {
+    formData.delete("area_sqft"); // Don't send empty strings to numeric columns
   }
+
+  // 2. Append Metadata
+  formData.append("user_agent", ua);
+  formData.append("device_type", /Mobile|Android|iP(hone|od)/i.test(ua) ? "Mobile" : "Desktop");
+  formData.append("os", /android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : /Win/i.test(ua) ? "Windows" : "Unknown");
+  formData.append("page_url", window.location.href);
+  formData.append("property_title", propertyTitle || "General Inquiry");
+  
+  if (userIp) {
+    formData.append("ip_address", userIp);
+  }
+
+  startTransition(async () => {
+    try {
+      const result = await submitLead(formData);
+      
+      if (result.success) {
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag('event', 'conversion', {
+            'send_to': GOOGLE_ADS_ID,
+            'value': 1.0,
+            'currency': 'INR'
+          });
+        }
+
+        // Use !! to force a boolean value
+        setIsDuplicate(!!result.duplicate);
+        setIsSuccess(true);
+      } else {
+        // This captures the error message returned by your server action
+        setErrorMessage(result.error || "Submission failed.");
+      }
+    } catch (err) {
+      setErrorMessage("Network error. Please try again.");
+    }
+  });
+}
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -112,11 +108,11 @@ export default function ContactFormPopup({ onClose, propertyTitle, userIp: initi
 
         <div className="p-8 sm:p-10">
           <AnimatePresence mode="wait">
-            {isCheckingIP || isPending ? (
+            {isPending ? (
               <motion.div key="loader" className="py-16 flex flex-col items-center gap-4">
                 <Loader2 className="animate-spin text-[#fd610d]" size={40} />
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  {isCheckingIP ? "Checking Status..." : "Verifying Connection..."}
+                  Verifying Connection...
                 </p>
               </motion.div>
             ) : isSuccess ? (
@@ -141,39 +137,53 @@ export default function ContactFormPopup({ onClose, propertyTitle, userIp: initi
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="mb-8">
-                  <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Get <span className="text-[#fd610d]">Pricing</span></h2>
-                  <p className="text-[10px] text-slate-400 font-black mt-1 uppercase tracking-widest">{propertyTitle || "Pune Warehouse Quotes"}</p>
+                <div className="mb-6">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900 leading-none">Get <span className="text-[#fd610d]">Pricing</span></h2>
+                  <p className="text-[10px] text-slate-400 font-black mt-2 uppercase tracking-widest">{propertyTitle || "Pune Warehouse Quotes"}</p>
                 </div>
 
-                <form action={handleSubmit} className="space-y-4">
+                <form action={handleSubmit} className="space-y-3">
                   <input type="text" name="website_url" className="hidden" aria-hidden="true" />
                   
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={18} />
-                    <input name="full_name" required type="text" placeholder="Full Name *" className="w-full bg-slate-50 rounded-2xl py-4 pl-12 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={16} />
+                    <input name="full_name" required type="text" placeholder="Full Name *" className="w-full bg-slate-50 rounded-xl py-3.5 pl-11 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
                   </div>
 
                   <div className="relative group">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={18} />
-                    <input name="phone" required type="tel" pattern="[6-9][0-9]{9}" maxLength={10} placeholder="Phone Number *" className="w-full bg-slate-50 rounded-2xl py-4 pl-12 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={16} />
+                    <input name="phone" required type="tel" pattern="[6-9][0-9]{9}" maxLength={10} placeholder="Phone Number *" className="w-full bg-slate-50 rounded-xl py-3.5 pl-11 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <select name="location" required className="w-full bg-slate-50 rounded-2xl py-4 px-4 font-bold text-sm outline-none appearance-none cursor-pointer">
-                      <option value="">Zone *</option>
-                      {warehouseLocations.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                    <select name="urgency" required className="w-full bg-slate-50 rounded-2xl py-4 px-4 font-bold text-sm outline-none appearance-none cursor-pointer">
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={16} />
+                    <input name="email" type="email" placeholder="Email Address (Optional)" className="w-full bg-slate-50 rounded-xl py-3.5 pl-11 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
+                  </div>
+
+                  <div className="relative group">
+                    <Maximize className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d]" size={16} />
+                    <input name="area_sqft" required type="number" placeholder="Required Area (Sq. Ft.) *" className="w-full bg-slate-50 rounded-xl py-3.5 pl-11 font-bold text-sm outline-none border-2 border-transparent focus:border-[#fd610d]/10 focus:bg-white transition-all" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative group">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#fd610d] pointer-events-none" size={14} />
+                      <select name="location" required className="w-full bg-slate-50 rounded-xl py-3.5 pl-9 pr-2 font-bold text-[13px] outline-none appearance-none cursor-pointer border-2 border-transparent focus:border-[#fd610d]/10">
+                        <option value="">Location Preference *</option>
+                        {warehouseLocations.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+
+                    <select name="urgency" required className="w-full bg-slate-50 rounded-xl py-3.5 px-4 font-bold text-[13px] outline-none appearance-none cursor-pointer border-2 border-transparent focus:border-[#fd610d]/10">
                       <option value="">Urgency *</option>
                       {urgencyOptions.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </div>
 
-                  <textarea name="message" rows={2} required className="w-full bg-slate-50 rounded-2xl py-4 px-4 font-bold text-sm outline-none resize-none focus:bg-white transition-all border-2 border-transparent focus:border-[#fd610d]/10" defaultValue={`I'm interested in ${propertyTitle || 'Grade-A Warehouse'}.`} />
+                  <textarea name="message" rows={2} required className="w-full bg-slate-50 rounded-xl py-3 px-4 font-bold text-sm outline-none resize-none focus:bg-white transition-all border-2 border-transparent focus:border-[#fd610d]/10" defaultValue={`I'm interested in ${propertyTitle || 'Grade-A Warehouse'}.`} />
 
                   {errorMessage && (
-                    <div className="text-red-600 bg-red-50 p-4 rounded-xl text-[10px] font-bold flex items-center gap-2">
+                    <div className="text-red-600 bg-red-50 p-3 rounded-xl text-[10px] font-bold flex items-center gap-2">
                       <AlertCircle size={14} /> {errorMessage}
                     </div>
                   )}
@@ -181,7 +191,7 @@ export default function ContactFormPopup({ onClose, propertyTitle, userIp: initi
                   <button 
                     type="submit" 
                     disabled={isPending}
-                    className="w-full py-5 rounded-2xl bg-[#fd610d] text-white font-black uppercase tracking-widest text-[11px] shadow-xl shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                    className="w-full py-4.5 rounded-xl bg-[#fd610d] text-white font-black uppercase tracking-widest text-[11px] shadow-xl shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isPending ? "Connecting to Concierge..." : "Send Inquiry"}
                   </button>

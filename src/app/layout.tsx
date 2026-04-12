@@ -9,18 +9,10 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContactFormPopup from "@/components/sections/ContactForm";
 import FloatingContact from "@/components/FloatingContact";
-import { checkExistingLead } from "@/app/actions/submit-lead"; // Ensure this is imported
+import { checkExistingLead } from "@/app/actions/submit-lead";
 
-// Fonts
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-const archivo = Archivo({
-  subsets: ["latin"],
-  variable: "--font-display",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
 
 export default function RootLayout({
   children,
@@ -29,52 +21,44 @@ export default function RootLayout({
 }>) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [userIp, setUserIp] = useState("");
+  const [shouldSuppress, setShouldSuppress] = useState(false);
 
   const closePopup = () => setIsPopupOpen(false);
 
   useEffect(() => {
-    async function handleAutoPopup() {
+    async function initializePopupLogic() {
       try {
-        // 1. Fetch current visitor IP
+        // 1. Get User IP
         const ipRes = await fetch("https://api.ipify.org?format=json");
         const { ip } = await ipRes.json();
         setUserIp(ip);
 
-        // 2. Check if this IP already exists in the database
+        // 2. Check if lead exists for this IP
         const result = await checkExistingLead(ip);
 
-        // 3. ONLY trigger the popup if the lead DOES NOT exist
-        if (!result.exists) {
+        if (result.exists) {
+          setShouldSuppress(true);
+          console.log("Existing lead detected. Popup will not show.");
+        } else {
+          // 3. Only set timer if user is NEW
           const timer = setTimeout(() => {
             setIsPopupOpen(true);
-          }, 3000); // 3-second delay
-
+          }, 3000);
           return () => clearTimeout(timer);
-        } else {
-          console.log("Lead already registered. Auto-popup suppressed.");
         }
       } catch (err) {
-        console.error("Popup logic error:", err);
+        console.error("Initialization error:", err);
       }
     }
 
-    handleAutoPopup();
+    initializePopupLogic();
   }, []);
 
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}
-    >
+    <html lang="en" className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}>
       <head>
-        <Script
-          strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID`}
-        />
-        <Script
-          id="gtag-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
+        <Script strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID`} />
+        <Script id="gtag-init" strategy="afterInteractive" dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
@@ -88,8 +72,12 @@ export default function RootLayout({
         <Navbar />
         
         <AnimatePresence mode="wait">
-          {isPopupOpen && (
-            <ContactFormPopup onClose={closePopup} userIp={userIp} />
+          {isPopupOpen && !shouldSuppress && (
+            <ContactFormPopup 
+              onClose={closePopup} 
+              userIp={userIp} 
+              initialIsSuccess={shouldSuppress} 
+            />
           )}
         </AnimatePresence>
 
