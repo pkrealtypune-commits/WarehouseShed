@@ -25,7 +25,7 @@ const InventorySection = () => {
     <section id="inventory" className="py-24 bg-gray-50 text-gray-950 scroll-mt-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header (Remains same) */}
+        {/* Header - Keyword Optimized for Quality Score */}
         <div className="text-center mb-16">
           <motion.span 
             initial={{ opacity: 0, y: 10 }}
@@ -39,16 +39,16 @@ const InventorySection = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-black tracking-tight uppercase leading-none"
+            className="text-3xl md:text-5xl font-black tracking-tight uppercase leading-none"
           >
-            Available Warehouses in <span className="text-blue-600">Pune</span>
+            Latest <span className="text-blue-600">Industrial Sheds on Rent</span> & Godowns for Rent
           </motion.h2>
           <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto font-medium">
-            Grade-A industrial spaces with high-load flooring and prime connectivity in the industrial corridors.
+            Explore premium **Warehouse for Rent in Chakan MIDC** and Pune. Grade-A industrial spaces with high-load flooring and prime connectivity.
           </p>
         </div>
 
-        {/* Property Grid (Remains same) */}
+        {/* Property Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {inventoryData.map((item, index) => (
             <motion.div
@@ -63,7 +63,7 @@ const InventorySection = () => {
               <div className="relative h-72 overflow-hidden">
                 <Image
                   src={item.image}
-                  alt={item.title}
+                  alt={`${item.title} - Warehouse on Rent in Pune`}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -77,14 +77,15 @@ const InventorySection = () => {
               <div className="p-8 flex flex-col flex-grow">
                 <div className="flex items-center gap-2 text-blue-600 mb-3">
                   <MapPin size={14} strokeWidth={3} />
-                  <span className="text-[11px] font-black uppercase tracking-[0.2em]">{item.location}</span>
+                  {/* Location keyword boost */}
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em]">{item.location} MIDC Corridor</span>
                 </div>
-                <h3 className="text-2xl font-black mb-4 group-hover:text-[#fd610d] transition-colors leading-tight uppercase tracking-tighter">
+                <h3 className="text-xl md:text-2xl font-black mb-4 group-hover:text-[#fd610d] transition-colors leading-tight uppercase tracking-tighter">
                   {item.title}
                 </h3>
                 <div className="mt-auto pt-6 border-t border-gray-100 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Area</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Covered Area</span>
                     <div className="flex items-center gap-2 text-slate-900">
                       <Maximize2 size={16} className="text-blue-600" />
                       <span className="text-lg font-black">{item.area}</span>
@@ -116,7 +117,7 @@ const InventorySection = () => {
             </motion.div>
             
             <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none text-slate-900">
-              Call & Unlock <span className="text-[#fd610d]">The Best Deal</span> Today
+              Get Best Quotes for <span className="text-[#fd610d]">Warehouses on Rent</span>
             </h3>
           </motion.div>
 
@@ -126,7 +127,6 @@ const InventorySection = () => {
             viewport={{ once: true }}
             className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-6"
           >
-            {/* Price Sheet & Floor Plan Button */}
             <button 
               onClick={() => setIsPriceSheetOpen(true)}
               className="w-full lg:w-auto h-[70px] flex items-center justify-center gap-4 bg-slate-950 text-white px-12 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-blue-600 transition-all shadow-2xl active:scale-95 group border-b-4 border-slate-800 hover:border-blue-700"
@@ -135,7 +135,6 @@ const InventorySection = () => {
               <span>Get Price Sheet & Floor Plan</span>
             </button>
 
-            {/* Pulsing Call Button - Constant Slate 950 Text */}
             <motion.a
               href="tel:+919765464333"
               animate={{ 
@@ -158,7 +157,6 @@ const InventorySection = () => {
         </div>
       </div>
 
-      {/* POPUPS (Remains same) */}
       <PriceSheetPopup isOpen={isPriceSheetOpen} onClose={() => setIsPriceSheetOpen(false)} />
       
       <AnimatePresence mode="wait">

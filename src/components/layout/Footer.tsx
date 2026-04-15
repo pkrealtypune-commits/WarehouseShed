@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -24,8 +24,9 @@ const Footer = () => {
       const id = href.replace('/#', '');
       const element = document.getElementById(id);
       if (element) {
+        const offset = element.offsetTop - 80;
         window.scrollTo({
-          top: element.offsetTop - 80,
+          top: offset,
           behavior: 'smooth',
         });
       }
@@ -50,14 +51,14 @@ const Footer = () => {
           <div className="space-y-8">
             <Link href="/" className="flex items-center gap-3 active:scale-95 transition-transform">
               <div className="relative w-10 h-10">
-                <Image src="/logo.avif" alt="Logo" fill className="object-contain" />
+                <Image src="/logo.avif" alt="Warehouse Sheds Pune" fill className="object-contain" />
               </div>
               <span className="font-black text-2xl uppercase tracking-tighter">
                 <span className="text-[#fd610d]">Warehouse</span> <span className="text-blue-500">Sheds</span>
               </span>
             </Link>
             <p className="text-slate-400 font-medium leading-relaxed max-w-xs">
-              Specializing in Grade-A industrial infrastructure and warehouse logistics solutions across Pune, Chakan, Talegaon and Ranjangaon since 2018.
+              Your trusted partner for <strong>Industrial Shed on rent</strong> and <strong>Warehouse space for rent</strong> across Chakan MIDC, Talegaon, and Pune industrial zones.
             </p>
             <div className="flex items-center gap-3">
               {[
@@ -109,7 +110,7 @@ const Footer = () => {
                       <Phone size={18} className="text-blue-500 group-hover:text-white" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-0.5">Direct Line</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-0.5">Leasing Inquiries</p>
                       <p className="font-bold text-slate-200 group-hover:text-blue-500 transition-colors">+91 97654 64333</p>
                     </div>
                   </a>
@@ -121,7 +122,9 @@ const Footer = () => {
                     </div>
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-0.5">Operations</p>
-                      <p className="font-bold text-slate-200">Pune, Chakan, Talegaon & Ranjangaon Industrial Zones</p>
+                      <p className="font-bold text-slate-200 leading-tight">
+                        Chakan MIDC, Talegaon Dabhade, <br /> & Pune Industrial Hubs
+                      </p>
                     </div>
                   </div>
                 </li>
@@ -129,24 +132,23 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Realty Works Management Section - Minimalist 1:1 Aspect */}
+          {/* Realty Works Management Section */}
           <div className="flex flex-col items-center justify-center lg:items-start lg:pl-8">
             <div className="flex items-center gap-2 mb-4">
                <ShieldCheck size={12} className="text-emerald-500" />
-               <span className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-500">Managed By</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-500">Strategic Partner</span>
             </div>
 
-            {/* 1:1 Aspect Ratio Container - No Bg, No Border */}
             <div className="relative w-32 h-32 aspect-square">
               <Image 
                 src="/realty.avif" 
-                alt="Realty Works" 
+                alt="Realty Works - Industrial Real Estate Experts" 
                 fill 
                 className="object-contain" 
               />
             </div>
             
-            <p className="mt-4 text-[10px] font-bold text-slate-400 tracking-tight leading-tight text-center lg:text-left">
+            <p className="mt-4 text-[10px] font-bold text-slate-400 tracking-tight leading-tight text-center lg:text-left uppercase">
               Operational Excellence <br /> via Realty Works
             </p>
           </div>
@@ -155,13 +157,13 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-x-8 gap-y-2">
-            <p className="opacity-50">© {currentYear} Warehouse Sheds</p>
+            <p className="opacity-50">© {currentYear} Warehouse Sheds Pune</p>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
           
           <div className="flex items-center gap-2 group cursor-default">
-            <span className="opacity-50">Website by</span>
+            <span className="opacity-50 text-[9px]">SEO & UI by</span>
             <span className="text-slate-400 group-hover:text-[#fd610d] transition-colors tracking-normal lowercase italic font-black text-sm">
               lupa entertainment
             </span>

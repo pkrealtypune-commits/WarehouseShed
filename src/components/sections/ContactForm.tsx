@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitLead } from "@/app/actions/submit-lead";
 import { 
@@ -16,17 +17,16 @@ import {
   MapPin
 } from "lucide-react";
 
-const warehouseLocations = ["Chakan", "Talegaon", "Wagholi", "Kesananda", "Lohegaon", "Lonikand"];
+const warehouseLocations = ["Chakan", "Talegaon", "Wagholi", "Kesananda", "Lohegaon", "Lonikand", "Hinjewadi"];
 const urgencyOptions = ["Immediate", "Within 30 Days", "1-3 Months", "Planning Stage"];
 
 const WHATSAPP_NUMBER = "919765464333";
-const GOOGLE_ADS_ID = "AW-123456789/your-label"; 
 
 interface PopupProps {
   onClose: () => void;
   propertyTitle?: string;
   userIp?: string;
-  initialIsSuccess?: boolean; // New Prop to receive status from layout
+  initialIsSuccess?: boolean;
 }
 
 export default function ContactFormPopup({ 
@@ -35,59 +35,57 @@ export default function ContactFormPopup({
   userIp, 
   initialIsSuccess = false 
 }: PopupProps) {
-  // Use status pre-fetched by the layout to avoid showing a loader on mount
+  const router = useRouter();
   const [isSuccess, setIsSuccess] = useState(initialIsSuccess);
   const [isDuplicate, setIsDuplicate] = useState(initialIsSuccess);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
- async function handleSubmit(formData: FormData) {
-  setErrorMessage("");
-  
-  const ua = navigator.userAgent;
-  
-  // 1. Clean Numeric Data: Ensure area_sqft is a valid number string or null
-  const areaValue = formData.get("area_sqft");
-  if (!areaValue || areaValue === "") {
-    formData.delete("area_sqft"); // Don't send empty strings to numeric columns
-  }
-
-  // 2. Append Metadata
-  formData.append("user_agent", ua);
-  formData.append("device_type", /Mobile|Android|iP(hone|od)/i.test(ua) ? "Mobile" : "Desktop");
-  formData.append("os", /android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : /Win/i.test(ua) ? "Windows" : "Unknown");
-  formData.append("page_url", window.location.href);
-  formData.append("property_title", propertyTitle || "General Inquiry");
-  
-  if (userIp) {
-    formData.append("ip_address", userIp);
-  }
-
-  startTransition(async () => {
-    try {
-      const result = await submitLead(formData);
-      
-      if (result.success) {
-        if (typeof window !== "undefined" && (window as any).gtag) {
-          (window as any).gtag('event', 'conversion', {
-            'send_to': GOOGLE_ADS_ID,
-            'value': 1.0,
-            'currency': 'INR'
-          });
-        }
-
-        // Use !! to force a boolean value
-        setIsDuplicate(!!result.duplicate);
-        setIsSuccess(true);
-      } else {
-        // This captures the error message returned by your server action
-        setErrorMessage(result.error || "Submission failed.");
-      }
-    } catch (err) {
-      setErrorMessage("Network error. Please try again.");
+  async function handleSubmit(formData: FormData) {
+    setErrorMessage("");
+    const ua = navigator.userAgent;
+    
+    const areaValue = formData.get("area_sqft");
+    if (!areaValue || areaValue === "") {
+      formData.delete("area_sqft");
     }
-  });
-}
+
+    formData.append("user_agent", ua);
+    formData.append("device_type", /Mobile|Android|iP(hone|od)/i.test(ua) ? "Mobile" : "Desktop");
+    formData.append("os", /android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : /Win/i.test(ua) ? "Windows" : "Unknown");
+    formData.append("page_url", window.location.href);
+    formData.append("property_title", propertyTitle || "General Inquiry");
+    
+    if (userIp) {
+      formData.append("ip_address", userIp);
+    }
+
+    startTransition(async () => {
+      try {
+        const result = await submitLead(formData);
+        
+        if (result.success) {
+          // Gtag conversion is now handled on the /thank-you page to prevent double-counting
+          
+          if (result.duplicate) {
+            // For duplicates, we stay in the popup to show the specific message
+            setIsDuplicate(true);
+            setIsSuccess(true);
+          } else {
+            // SUCCESS PATH: 
+            // 1. Close popup immediately to prevent background UI flicker
+            onClose(); 
+            // 2. Push to the dedicated Thank You page (which fires the Gtag)
+            router.push('/thank-you');
+          }
+        } else {
+          setErrorMessage(result.error || "Submission failed.");
+        }
+      } catch (err) {
+        setErrorMessage("Network error. Please try again.");
+      }
+    });
+  }
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -115,24 +113,20 @@ export default function ContactFormPopup({
                   Verifying Connection...
                 </p>
               </motion.div>
-            ) : isSuccess ? (
-              <motion.div key="success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
+            ) : isSuccess && isDuplicate ? (
+              <motion.div key="duplicate" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
                 <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500">
                   <CheckCircle2 size={40} />
                 </div>
-                <h3 className="text-2xl font-black uppercase text-slate-900 leading-tight">
-                  {isDuplicate ? "Already Registered" : "Interest Captured"}
-                </h3>
+                <h3 className="text-2xl font-black uppercase text-slate-900 leading-tight">Already Registered</h3>
                 <p className="text-slate-500 mt-3 font-bold text-sm leading-relaxed px-2">
-                  {isDuplicate 
-                    ? "We've already received your inquiry. Our team will contact you shortly." 
-                    : "Success! Our sales experts will contact you with pricing details soon."}
+                  We&apos;ve already received your inquiry. Our team will contact you shortly.
                 </p>
                 <div className="mt-8 space-y-3">
                   <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" className="w-full py-4 rounded-2xl bg-[#25D366] text-white font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
                     <MessageCircle size={18} /> Chat on WhatsApp
                   </a>
-                  <button onClick={() => { setIsSuccess(false); setIsDuplicate(false); }} className="text-[10px] font-bold text-slate-400 uppercase hover:text-slate-600 transition-colors cursor-pointer">Submit Another Requirement</button>
+                  <button onClick={onClose} className="text-[10px] font-bold text-slate-400 uppercase hover:text-slate-600 transition-colors cursor-pointer">Close Window</button>
                 </div>
               </motion.div>
             ) : (

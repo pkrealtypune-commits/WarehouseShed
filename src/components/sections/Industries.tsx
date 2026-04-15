@@ -17,37 +17,37 @@ const sectors = [
   {
     title: "FMCG",
     icon: <Package className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "High-throughput floor plates optimized for rapid turnaround and logistics.",
+    description: "High-throughput floor plates and logistics-ready warehouse for rent in Chakan MIDC.",
     tag: "High Volume"
   },
   {
     title: "Electronics",
     icon: <Cpu className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "ESD-protected environments and high-security zones for sensitive technology.",
+    description: "ESD-protected environments in premium industrial sheds for rent in Chakan.",
     tag: "Tech Ready"
   },
   {
     title: "Machinery",
     icon: <Settings className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "Heavy-duty SFRC flooring designed for massive point loads and vibration.",
+    description: "Heavy-duty SFRC flooring designed for massive point loads in the MIDC corridor.",
     tag: "Heavy Load"
   },
   {
     title: "Retail",
     icon: <ShoppingCart className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "B2C-ready hubs with mezzanine support and efficient pick-pack configurations.",
+    description: "B2C-ready hubs with mezzanine support for e-commerce warehouse space for rent in Pune.",
     tag: "E-commerce"
   },
   {
     title: "Energy",
     icon: <Sun className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "Expansive storage solutions for large-scale renewable energy components.",
+    description: "Expansive storage solutions for large-scale renewable energy and heavy equipment.",
     tag: "Scale"
   },
   {
     title: "Chemicals",
     icon: <FlaskConical className="w-6 h-6 md:w-8 md:h-8" />,
-    description: "Safety-first facilities equipped with specialized containment systems.",
+    description: "Safety-first facilities equipped with specialized containment and regulatory compliance.",
     tag: "Compliance"
   }
 ];
@@ -68,9 +68,11 @@ export default function IndustriesSection() {
               <span className="text-blue-600">Diverse Sectors.</span>
             </h3>
           </div>
-          <p className="max-w-xs text-slate-400 text-[11px] md:text-sm font-bold uppercase tracking-widest leading-relaxed">
-            Tailored infrastructure designed to meet the unique demands of global industry leaders.
-          </p>
+          <div className="max-w-xs">
+            <p className="text-slate-400 text-[11px] md:text-sm font-bold uppercase tracking-widest leading-relaxed">
+              Providing specialized Warehouse Space for Rent in Pune for Automotive, Logistics, and E-commerce sectors.
+            </p>
+          </div>
         </div>
 
         {/* Bento Grid */}

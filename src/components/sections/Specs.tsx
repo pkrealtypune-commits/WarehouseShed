@@ -17,12 +17,48 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
 const technicalSpecs = [
-  { icon: Ruler, title: "Vertical Clearance", value: "12 - 14 Meters", description: "Maximum clear height for high-density FM Global racking systems.", detail: "Clear Height" },
-  { icon: Layers, title: "SFRC Flooring", value: "FM2 Compliant", description: "Laser-screed flooring with 8-ton/sqm point load capacity for heavy machinery.", detail: "Floor Load" },
-  { icon: FlameKindling, title: "Fire Mitigation", value: "ESFR Sprinklers", description: "NFPA-compliant suppression systems with high-velocity smoke vents.", detail: "Fire Safety" },
-  { icon: Wind, title: "Air Changes", value: "6x Per Hour", description: "Passive ridge ventilation ensuring optimal ambient temperature control.", detail: "Ventilation" },
-  { icon: Truck, title: "Docking Apron", value: "16.5m Depth", description: "Precision hydraulic dock levelers with 45-degree concrete apron space.", detail: "Rapid Loading" },
-  { icon: ShieldCheck, title: "Security", value: "AI Monitoring", description: "24/7 integrated surveillance with motion-sensor peripheral alerts.", detail: "Smart Perimeter" },
+  { 
+    icon: Ruler, 
+    title: "Vertical Clearance", 
+    value: "12 - 14 Meters", 
+    description: "Industrial shed on rent in Pune with 12m+ clear height for high-density FM Global racking systems.", 
+    detail: "Clear Height" 
+  },
+  { 
+    icon: Layers, 
+    title: "SFRC Flooring", 
+    value: "FM2 Compliant", 
+    description: "Heavy-duty laser-screed flooring with 8-ton/sqm capacity—ideal for industrial shed on rent requirements.", 
+    detail: "Floor Load" 
+  },
+  { 
+    icon: FlameKindling, 
+    title: "Fire Mitigation", 
+    value: "ESFR Sprinklers", 
+    description: "Ready-to-move warehouse space for rent equipped with NFPA-compliant suppression and smoke vents.", 
+    detail: "Fire Safety" 
+  },
+  { 
+    icon: Wind, 
+    title: "Air Changes", 
+    value: "6x Per Hour", 
+    description: "Passive ridge ventilation ensuring optimal temperature control in your warehouse space for rent.", 
+    detail: "Ventilation" 
+  },
+  { 
+    icon: Truck, 
+    title: "Docking Apron", 
+    value: "16.5m Depth", 
+    description: "Ample docking space with precision hydraulic levelers designed for rapid logistics and loading.", 
+    detail: "Rapid Loading" 
+  },
+  { 
+    icon: ShieldCheck, 
+    title: "Security", 
+    value: "AI Monitoring", 
+    description: "24/7 integrated surveillance providing a secure perimeter for high-value warehouse operations.", 
+    detail: "Smart Perimeter" 
+  },
 ];
 
 export default function Specs() {
@@ -34,7 +70,7 @@ export default function Specs() {
 
   return (
     <section id="specs" className="py-16 md:py-32 bg-white relative overflow-hidden">
-      {/* Structural Grid Pattern - Aligned with About Section background style */}
+      {/* Structural Grid Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.03] pointer-events-none" 
         style={{ 
@@ -45,7 +81,7 @@ export default function Specs() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
-        {/* Header Section - Matches AboutSection exactly */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-16 md:mb-24">
           <div className="max-w-3xl space-y-4">
             <motion.div 
@@ -76,11 +112,11 @@ export default function Specs() {
             
             <p className="text-slate-600 font-medium text-base md:text-lg leading-relaxed max-w-xl">
               Engineered for efficiency. Our facilities are built to global Grade-A 
-              standards, ensuring high-load capacity and rapid operations.
+              standards, offering the most robust <strong>industrial shed on rent</strong> options in the region.
             </p>
           </div>
 
-          {/* Navigation - Styled to match About Section's industrial buttons */}
+          {/* Navigation */}
           <div className="flex items-center gap-3">
             <button className="swiper-prev-button group w-12 h-12 md:w-14 md:h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:border-slate-950 hover:text-slate-950 transition-all shadow-sm active:scale-95">
               <ChevronLeft size={24} />

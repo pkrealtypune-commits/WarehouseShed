@@ -5,10 +5,30 @@ import { motion } from 'framer-motion';
 import { Star, Users, CheckCircle, Trophy, TrendingUp } from 'lucide-react';
 
 const stats = [
-  { label: 'Properties Managed', value: '120+', icon: CheckCircle, sub: 'Grade-A Infrastructure' },
-  { label: 'Happy Clients', value: '450+', icon: Users, sub: 'Across 12+ Industries' },
-  { label: 'Square Feet Delivered', value: '2.5M+', icon: TrendingUp, sub: 'Premium Warehouse Space' },
-  { label: 'Industry Awards', value: '15+', icon: Trophy, sub: 'Service Excellence' },
+  { 
+    label: 'Managed in Pune MIDC', 
+    value: '120+', 
+    icon: CheckCircle, 
+    sub: 'Industrial Sheds for Rent' 
+  },
+  { 
+    label: 'Industrial Plots Sold', 
+    value: '50+', 
+    icon: Users, 
+    sub: 'In Talegaon & Chakan MIDC' 
+  },
+  { 
+    label: 'Godown on Rent in Pune', 
+    value: '2.5M+', 
+    icon: TrendingUp, 
+    sub: 'Total Sq. Ft. Managed' 
+  },
+  { 
+    label: 'Industry Awards', 
+    value: '15+', 
+    icon: Trophy, 
+    sub: 'Service Excellence' 
+  },
 ];
 
 const StatsSection = () => {
@@ -36,7 +56,8 @@ const StatsSection = () => {
             </h3>
             <p className="text-slate-500 font-bold uppercase text-[10px] md:text-xs tracking-widest leading-relaxed">
               Based on 450+ verified business <br className="hidden md:block" /> 
-              reviews across Google & Industry Portals.
+              reviews for Warehouse and Industrial <br className="hidden md:block" />
+              services in Talegaon Dabhade.
             </p>
             
             <div className="mt-8 pt-8 border-t border-slate-100">
@@ -50,7 +71,9 @@ const StatsSection = () => {
                   +400
                 </div>
               </div>
-              <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-tight">Trusted by logistics heads nationwide</p>
+              <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-tight">
+                Trusted by logistics heads in Chakan MIDC
+              </p>
             </div>
           </motion.div>
 
@@ -68,8 +91,12 @@ const StatsSection = () => {
                 <div className="relative z-10">
                   <stat.icon className="text-[#fd610d] group-hover:text-white mb-6 transition-colors" size={32} />
                   <p className="text-4xl md:text-5xl font-black tracking-tighter mb-2">{stat.value}</p>
-                  <p className="text-sm font-black uppercase tracking-widest text-white/90">{stat.label}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-tight text-white/40 group-hover:text-white/70 mt-1">{stat.sub}</p>
+                  <p className="text-sm font-black uppercase tracking-widest text-white/90 leading-tight">
+                    {stat.label}
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-tight text-white/40 group-hover:text-white/70 mt-1">
+                    {stat.sub}
+                  </p>
                 </div>
                 {/* Background Accent */}
                 <stat.icon className="absolute -bottom-8 -right-8 text-white/5 group-hover:text-white/10 transition-colors" size={180} />

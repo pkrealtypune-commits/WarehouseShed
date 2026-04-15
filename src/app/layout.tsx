@@ -14,6 +14,9 @@ import { checkExistingLead } from "@/app/actions/submit-lead";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
 
+// Replace this with your actual Google Ads ID (e.g., AW-123456789)
+const GA_MEASUREMENT_ID = "AW-CONVERSION_ID"; 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,16 +60,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}>
       <head>
-        <Script strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID`} />
-        <Script id="gtag-init" strategy="afterInteractive" dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'AW-CONVERSION_ID');
-            `,
-          }}
+        {/* 1. Global Base Tag - Loads on every page */}
+        <Script 
+          strategy="afterInteractive" 
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} 
         />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-white">
         <Navbar />

@@ -7,13 +7,13 @@ import { Maximize2, X, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-reac
 import ContactFormPopup from '@/components/sections/ContactForm';
 
 const galleryImages = [
-  { src: '/assets/hero-logistics.avif', title: 'Industrial Facility', category: 'Grade-A' },
-  { src: '/assets/wagholi.avif', title: 'Wagholi Logistics Park', category: 'Shed' },
-  { src: '/assets/chakan.avif', title: 'Chakan Industrial Hub', category: 'Manufacturing' },
-  { src: '/assets/kesanand.avif', title: 'Kesanand Storage', category: 'Warehouse' },
-  { src: '/assets/lonikand.avif', title: 'Lonikand Distribution', category: 'Logistics' },
-  { src: '/assets/talegaon.avif', title: 'Talegaon Mega Center', category: 'Build-to-Suit' },
-  { src: '/assets/lohegaon.avif', title: 'Lohegaon Inventory', category: 'Prime' },
+  { src: '/assets/hero-logistics.avif', title: 'Industrial Shed for Rent in Chakan', category: 'Grade-A Shed' },
+  { src: '/assets/wagholi.avif', title: 'Warehouse for Rent in Wagholi Pune', category: 'Logistics' },
+  { src: '/assets/chakan.avif', title: 'Warehouse for Rent in Chakan MIDC', category: 'Manufacturing' },
+  { src: '/assets/kesanand.avif', title: 'Industrial Plot for Sale in Pune', category: 'Industrial Land' },
+  { src: '/assets/lonikand.avif', title: 'Godown for Rent in Lonikand', category: 'Storage' },
+  { src: '/assets/talegaon.avif', title: 'Industrial Land for Sale in Talegaon', category: 'Build-to-Suit' },
+  { src: '/assets/lohegaon.avif', title: 'Prime Warehouse Space in Lohegaon', category: 'Inventory' },
 ];
 
 const GallerySection = () => {
@@ -40,6 +40,9 @@ const GallerySection = () => {
             <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
               Project <span className="text-blue-500 italic">Showcase.</span>
             </h3>
+            <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-4">
+              Explore Premium Warehouse and Industrial Shed projects across Pune & Chakan MIDC.
+            </p>
           </div>
           
           {/* Mobile Arrows Only */}
@@ -105,7 +108,7 @@ const GallerySection = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-8">
                 <span className="text-[#fd610d] text-[10px] font-black uppercase tracking-widest mb-1">{img.category}</span>
-                <h4 className="text-white text-xl font-black uppercase tracking-tighter">{img.title}</h4>
+                <h4 className="text-white text-xl font-black uppercase tracking-tighter leading-tight">{img.title}</h4>
                 <div className="mt-4 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white">
                     <Maximize2 size={18} />
                 </div>
@@ -117,8 +120,10 @@ const GallerySection = () => {
         {/* Closing CTA */}
         <div className="mt-12 md:mt-24 p-8 md:p-12 bg-white rounded-[2rem] md:rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
-            <h4 className="text-2xl md:text-3xl font-black text-slate-950 uppercase tracking-tighter leading-tight">Ready to see these <br className="md:hidden" /> in person?</h4>
-            <p className="text-slate-500 font-bold uppercase text-[10px] md:text-xs tracking-widest mt-2">Schedule a site visit today for any location.</p>
+            <h4 className="text-2xl md:text-3xl font-black text-slate-950 uppercase tracking-tighter leading-tight">Ready to see these <br className="md:hidden" /> properties in person?</h4>
+            <p className="text-slate-500 font-bold uppercase text-[10px] md:text-xs tracking-widest mt-2">
+              Book a site visit for Industrial Land or Warehouses in Chakan MIDC and Wagholi.
+            </p>
           </div>
           <button 
             onClick={() => setIsFormOpen(true)}
@@ -144,7 +149,7 @@ const GallerySection = () => {
               <X size={32} />
             </button>
             <div className="relative w-full max-w-5xl aspect-video">
-              <Image src={selectedImg} alt="Enlarged view" fill className="object-contain" />
+              <Image src={selectedImg} alt="Industrial Property View" fill className="object-contain" />
             </div>
           </motion.div>
         )}
