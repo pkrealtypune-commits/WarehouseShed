@@ -58,7 +58,7 @@ export async function submitLead(formData: FormData) {
 
     /**
      * Schema-Perfect Mapping
-     * We exclude 'user_agent' here because it doesn't exist in your SQL table.
+     * Added UTM and GCLID fields for Google Ads tracking
      */
     const leadData = {
       full_name: rawData.full_name as string,
@@ -74,6 +74,12 @@ export async function submitLead(formData: FormData) {
       browser: browserName,
       page_url: (rawData.page_url as string) || null,
       ip_address: (rawData.ip_address as string) || null,
+      
+      // Google Ads Tracking Fields
+      utm_source: (rawData.utm_source as string) || null,
+      utm_campaign: (rawData.utm_campaign as string) || null,
+      utm_term: (rawData.utm_term as string) || null,
+      gclid: (rawData.gclid as string) || null,
     };
 
     // 1. Server-side Duplicate Check 
@@ -89,13 +95,13 @@ export async function submitLead(formData: FormData) {
     if (checkError) throw checkError;
 
     if (existingLead) {
-      // Update existing record
+      // Update existing record with latest tracking data and set status to Urgent
       const { error: updateError } = await supabase
         .from("enquiries")
         .update({ 
           ...leadData,
           status: "Urgent", 
-          // Note: updated_at is usually automatic in Supabase, but we can update it if you have the column
+          updated_at: new Date().toISOString(), 
         })
         .eq("id", existingLead.id);
         
@@ -118,6 +124,7 @@ export async function submitLead(formData: FormData) {
 
     // 3. Email Notification
     try {
+      // Pass the updated leadData including UTMs to your email template
       await sendLeadEmail({ ...leadData, lead_source: "Website Pop-up" });
     } catch (emailErr) {
       console.error("Email notification failed:", emailErr);

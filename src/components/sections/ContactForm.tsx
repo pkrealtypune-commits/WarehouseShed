@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitLead } from "@/app/actions/submit-lead";
@@ -41,6 +41,25 @@ export default function ContactFormPopup({
   const [errorMessage, setErrorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
+  // --- NEW: Capture UTM Tracking Data ---
+  const [utmData, setUtmData] = useState({
+    utm_source: '',
+    utm_campaign: '',
+    utm_term: '',
+    gclid: ''
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setUtmData({
+      utm_source: params.get('utm_source') || '',
+      utm_campaign: params.get('utm_campaign') || '',
+      utm_term: params.get('utm_term') || '',
+      gclid: params.get('gclid') || ''
+    });
+  }, []);
+  // --------------------------------------
+
   async function handleSubmit(formData: FormData) {
     setErrorMessage("");
     const ua = navigator.userAgent;
@@ -56,6 +75,13 @@ export default function ContactFormPopup({
     formData.append("page_url", window.location.href);
     formData.append("property_title", propertyTitle || "General Inquiry");
     
+    // --- NEW: Append Tracking Data to Server Action ---
+    formData.append("utm_source", utmData.utm_source);
+    formData.append("utm_campaign", utmData.utm_campaign);
+    formData.append("utm_term", utmData.utm_term);
+    formData.append("gclid", utmData.gclid);
+    // --------------------------------------------------
+    
     if (userIp) {
       formData.append("ip_address", userIp);
     }
@@ -66,15 +92,11 @@ export default function ContactFormPopup({
         
         if (result.success) {
           if (result.duplicate) {
-            // For duplicates, stay in the popup to show the specific message
             setIsDuplicate(true);
             setIsSuccess(true);
           } else {
-            // SUCCESS PATH: 
-            // 1. Close popup immediately to prevent background UI flicker
+            // SUCCESS: Redirect to Thank You page for Gtag conversion firing
             onClose(); 
-            // 2. Push to the dedicated Thank You page with success flag
-            // This flag is checked by the Thank You page to allow entry and fire Gtag
             router.push('/thank-you?success=true');
           }
         } else {
