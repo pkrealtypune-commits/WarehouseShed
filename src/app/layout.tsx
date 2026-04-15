@@ -14,7 +14,8 @@ import { checkExistingLead } from "@/app/actions/submit-lead";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
 
-const GA_MEASUREMENT_ID = "AW-CONVERSION_ID"; 
+// ✅ REAL CONVERSION ID UPDATED
+const GA_MEASUREMENT_ID = "AW-18093608462"; 
 
 export default function RootLayout({
   children,
@@ -30,18 +31,15 @@ export default function RootLayout({
   useEffect(() => {
     async function initializePopupLogic() {
       try {
-        // 1. Get User IP
         const ipRes = await fetch("https://api.ipify.org?format=json");
         const { ip } = await ipRes.json();
         setUserIp(ip);
 
-        // 2. Check if lead exists for this IP
         const result = await checkExistingLead(ip);
 
         if (result.exists) {
           setShouldSuppress(true);
         } else {
-          // 3. Set timer for new users
           const timer = setTimeout(() => {
             setIsPopupOpen(true);
           }, 3000);
@@ -58,12 +56,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}>
       <head>
-        {/* Preconnect to Google Domains for faster ad script loading */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
         <link rel="preconnect" href="https://www.google.com" />
         
-        {/* Global Google Tag - afterInteractive ensures Ads fire without blocking the visual Hero load */}
+        {/* Global Google Tag */}
         <Script 
           strategy="afterInteractive" 
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} 
@@ -73,10 +70,21 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
+            
+            // Initializing with Enhanced Conversions for better B2B lead matching
             gtag('config', '${GA_MEASUREMENT_ID}', {
               'send_page_view': true,
               'allow_enhanced_conversions': true
             });
+
+            // ✅ Helper function for your components to call
+            window.captureLead = function() {
+              gtag('event', 'conversion', {
+                'send_to': '${GA_MEASUREMENT_ID}/CxdnCJqU8pwcEI6c2rND',
+                'value': 1.0,
+                'currency': 'INR'
+              });
+            }
           `}
         </Script>
       </head>
