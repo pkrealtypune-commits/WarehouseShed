@@ -1,37 +1,56 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ArrowLeft, MessageSquare } from 'lucide-react';
 
-// Replace these with your actual IDs from Google Ads
 const GA_MEASUREMENT_ID = "AW-CONVERSION_ID"; 
 const GA_CONVERSION_LABEL = "YOUR_SPECIFIC_LABEL";
 
 export default function ThankYouPage() {
+  const router = useRouter();
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    // 1. Protection Logic: Check if the user came from your domain/form
+    // We check the 'referrer'. If it's empty or doesn't include your site, redirect.
+    const referrer = document.referrer;
+    const isFromOwnSite = referrer.includes(window.location.hostname);
+
+    if (!isFromOwnSite) {
+      router.replace('/'); // Silently redirect to home if accessed manually
+    } else {
+      setIsVerified(true);
+    }
+  }, [router]);
+
+  // Don't render anything (or show a loader) until verification is complete
+  if (!isVerified) return <div className="min-h-screen bg-slate-950" />;
+
   return (
     <>
-      {/* 1. Prevent Search Engines from indexing this page */}
       <head>
         <title>Thank You | Inquiry Received</title>
         <meta name="robots" content="noindex, nofollow" />
       </head>
 
-      {/* 2. Google Ads Conversion Tracking Script */}
+      {/* 2. Google Ads Conversion Tracking Script - ONLY fires for verified leads */}
       <Script id="google-ads-conversion" strategy="afterInteractive">
         {`
-          gtag('event', 'conversion', {
-            'send_to': '${GA_MEASUREMENT_ID}/${GA_CONVERSION_LABEL}',
-            'value': 1.0,
-            'currency': 'INR'
-          });
+          if (typeof gtag === 'function') {
+            gtag('event', 'conversion', {
+              'send_to': '${GA_MEASUREMENT_ID}/${GA_CONVERSION_LABEL}',
+              'value': 1.0,
+              'currency': 'INR'
+            });
+          }
         `}
       </Script>
 
       <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Background Decorative Element */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full" />
         
         <motion.div 
@@ -54,7 +73,7 @@ export default function ThankYouPage() {
           
           <p className="text-slate-400 text-lg font-medium mb-12 max-w-md mx-auto">
             Our logistics expert will contact you within 24 hours to discuss your 
-            <strong> Industrial Shed</strong> requirements in Pune.
+            <strong> Industrial Shed</strong> requirements.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
