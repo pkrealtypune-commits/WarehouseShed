@@ -14,7 +14,6 @@ import { checkExistingLead } from "@/app/actions/submit-lead";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
 
-// Replace this with your actual Google Ads ID (e.g., AW-123456789)
 const GA_MEASUREMENT_ID = "AW-CONVERSION_ID"; 
 
 export default function RootLayout({
@@ -41,9 +40,8 @@ export default function RootLayout({
 
         if (result.exists) {
           setShouldSuppress(true);
-          console.log("Existing lead detected. Popup will not show.");
         } else {
-          // 3. Only set timer if user is NEW
+          // 3. Set timer for new users
           const timer = setTimeout(() => {
             setIsPopupOpen(true);
           }, 3000);
@@ -60,7 +58,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}>
       <head>
-        {/* 1. Global Base Tag - Loads on every page */}
+        {/* Preconnect to Google Domains for faster ad script loading */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
+        <link rel="preconnect" href="https://www.google.com" />
+        
+        {/* Global Google Tag - afterInteractive ensures Ads fire without blocking the visual Hero load */}
         <Script 
           strategy="afterInteractive" 
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} 
@@ -70,7 +73,10 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              'send_page_view': true,
+              'allow_enhanced_conversions': true
+            });
           `}
         </Script>
       </head>

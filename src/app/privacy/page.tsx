@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Lock, Eye, FileText, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Lock, Eye, FileText, ChevronLeft, CheckCircle2, Cpu } from "lucide-react";
 import Link from "next/link";
 
 export default function PrivacyPolicy() {
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back to Hub</span>
         </Link>
 
-        {/* Refined Small-to-Medium Header */}
+        {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
           
           <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            Last Updated: April 10, 2026
+            Last Updated: April 15, 2026
           </p>
         </motion.div>
 
@@ -57,17 +57,22 @@ export default function PrivacyPolicy() {
             {
               icon: <Eye className="text-blue-600" size={20} />,
               title: "01. Data Acquisition",
-              content: "We collect business identity and warehouse specifications exclusively to facilitate logistics solutions in Pune and Indore industrial zones. We do not engage in unauthorized data harvesting."
+              content: "We collect business identity and warehouse specifications exclusively to facilitate logistics solutions. This includes information provided through contact forms and technical identifiers required for service optimization."
+            },
+            {
+              icon: <Cpu className="text-blue-600" size={20} />,
+              title: "02. Digital Footprint & Ads",
+              content: "We use Google Ads (Gtag) and IP address tracking to analyze traffic patterns and enhance user experience. IP data is used specifically to prevent duplicate form submissions and to deliver relevant industrial property ads based on your professional interests."
             },
             {
               icon: <Lock className="text-blue-600" size={20} />,
-              title: "02. Encryption & Safety",
-              content: "Client expansion plans are processed through high-level encrypted channels. Our zero-leak policy ensures your strategic business moves remain secure from industrial competition."
+              title: "03. Encryption & Safety",
+              content: "All captured data is processed through encrypted channels. Our zero-leak policy ensures that your expansion plans and technical data remain confidential and secure from industrial competitors."
             },
             {
               icon: <FileText className="text-blue-600" size={20} />,
-              title: "03. Third-Party Clause",
-              content: "Your information is shared with vetted logistics partners only upon your explicit request for site inspections. We never sell contact lists to external marketing firms."
+              title: "04. Third-Party & Cookies",
+              content: "We utilize cookies to track conversions from Google Ads. We do not sell your personal or IP data to external marketing firms. Data is only shared with vetted property partners upon your explicit request for a site visit."
             }
           ].map((item, idx) => (
             <motion.section 
@@ -93,7 +98,7 @@ export default function PrivacyPolicy() {
           ))}
         </div>
 
-        {/* Refined Footer Footer CTA */}
+        {/* Footer CTA */}
         <div className="mt-16 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <Link 
             href="/#contact"
