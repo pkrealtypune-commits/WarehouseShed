@@ -27,10 +27,9 @@ export async function GET(request: Request) {
     // 4. Initialize client inside the handler
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 5. Perform the heartbeat query
-    // This keeps the project active by interacting with the DB
+    // 5. Perform the heartbeat query on 'enquiries' table
     const { error } = await supabase
-      .from('leads')
+      .from('enquiries')
       .select('id')
       .limit(1);
 
@@ -42,7 +41,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ 
       success: true, 
       timestamp: new Date().toISOString(),
-      message: "Heartbeat successful" 
+      message: "Heartbeat successful (enquiries table)" 
     });
 
   } catch (err: any) {
