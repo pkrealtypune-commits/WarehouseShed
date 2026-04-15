@@ -65,18 +65,17 @@ export default function ContactFormPopup({
         const result = await submitLead(formData);
         
         if (result.success) {
-          // Gtag conversion is now handled on the /thank-you page to prevent double-counting
-          
           if (result.duplicate) {
-            // For duplicates, we stay in the popup to show the specific message
+            // For duplicates, stay in the popup to show the specific message
             setIsDuplicate(true);
             setIsSuccess(true);
           } else {
             // SUCCESS PATH: 
             // 1. Close popup immediately to prevent background UI flicker
             onClose(); 
-            // 2. Push to the dedicated Thank You page (which fires the Gtag)
-            router.push('/thank-you');
+            // 2. Push to the dedicated Thank You page with success flag
+            // This flag is checked by the Thank You page to allow entry and fire Gtag
+            router.push('/thank-you?success=true');
           }
         } else {
           setErrorMessage(result.error || "Submission failed.");

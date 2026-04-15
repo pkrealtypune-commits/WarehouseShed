@@ -1,33 +1,35 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ArrowLeft, MessageSquare } from 'lucide-react';
 
+// Replace these with your actual IDs from Google Ads dashboard later
 const GA_MEASUREMENT_ID = "AW-CONVERSION_ID"; 
 const GA_CONVERSION_LABEL = "YOUR_SPECIFIC_LABEL";
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    // 1. Protection Logic: Check if the user came from your domain/form
-    // We check the 'referrer'. If it's empty or doesn't include your site, redirect.
-    const referrer = document.referrer;
-    const isFromOwnSite = referrer.includes(window.location.hostname);
+    // 1. Strict Protection Logic:
+    // We check for the 'success' parameter sent by the ContactFormPopup
+    const success = searchParams.get('success');
 
-    if (!isFromOwnSite) {
-      router.replace('/'); // Silently redirect to home if accessed manually
+    if (success !== 'true') {
+      // If someone types /thank-you manually, kick them to home
+      router.replace('/'); 
     } else {
       setIsVerified(true);
     }
-  }, [router]);
+  }, [router, searchParams]);
 
-  // Don't render anything (or show a loader) until verification is complete
+  // Prevent UI flicker while verifying
   if (!isVerified) return <div className="min-h-screen bg-slate-950" />;
 
   return (
@@ -51,6 +53,7 @@ export default function ThankYouPage() {
       </Script>
 
       <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Background Decorative Element */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/20 blur-[120px] rounded-full" />
         
         <motion.div 
@@ -96,5 +99,14 @@ export default function ThankYouPage() {
         </motion.div>
       </main>
     </>
+  );
+}
+
+// Main component with Suspense boundary for useSearchParams
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+      <ThankYouContent />
+    </Suspense>
   );
 }
