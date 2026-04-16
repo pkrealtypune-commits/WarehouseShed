@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { headers } from "next/headers"; // Added for secure IP capture
 import { sendLeadEmail } from "./sendEmail";
 
 const supabase = createClient(
@@ -22,8 +23,8 @@ function getBrowserName(ua: string) {
 }
 
 /**
- * Still available if needed for other components, 
- * though Layout now uses sessionStorage for performance.
+ * Still available if needed, though RootLayout now 
+ * handles suppression via sessionStorage for compliance.
  */
 export async function checkExistingLead(ip: string) {
   try {
@@ -40,10 +41,16 @@ export async function checkExistingLead(ip: string) {
 }
 
 /**
- * Processes the lead submission with UTM tracking and duplicate handling
+ * Processes the lead submission with UTM tracking and Server-Side IP detection
  */
 export async function submitLead(formData: FormData) {
   try {
+    // ✅ SECURE IP CAPTURE: Fetched from request headers (Google-compliant)
+    const headerList = await headers();
+    const ip = headerList.get("x-forwarded-for")?.split(',')[0] || 
+               headerList.get("x-real-ip") || 
+               "0.0.0.0";
+
     const rawData = Object.fromEntries(formData);
     
     // 1. Honeypot check (Spam Protection)
@@ -56,7 +63,6 @@ export async function submitLead(formData: FormData) {
 
     /**
      * Data Mapping
-     * Casting area_sqft to Number to ensure DB compatibility
      */
     const leadData = {
       full_name: rawData.full_name as string,
@@ -71,7 +77,7 @@ export async function submitLead(formData: FormData) {
       os: (rawData.os as string) || null,
       browser: browserName,
       page_url: (rawData.page_url as string) || null,
-      ip_address: (rawData.ip_address as string) || null,
+      ip_address: ip, // ✅ Use server-side detected IP
       
       // Google Ads Tracking Fields
       utm_source: (rawData.utm_source as string) || null,
@@ -82,8 +88,6 @@ export async function submitLead(formData: FormData) {
 
     /**
      * 2. Server-side Duplicate Check
-     * We check by Phone + Location. If a user tries to submit for the same location again,
-     * we update their tracking info instead of creating a messy duplicate.
      */
     const { data: existingLead, error: checkError } = await supabase
       .from("enquiries")
@@ -95,7 +99,6 @@ export async function submitLead(formData: FormData) {
     if (checkError) throw checkError;
 
     if (existingLead) {
-      // Update existing record with the latest UTMs and set status to Re-Inquiry
       const { error: updateError } = await supabase
         .from("enquiries")
         .update({ 

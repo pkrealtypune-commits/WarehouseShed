@@ -13,7 +13,6 @@ import FloatingContact from "@/components/FloatingContact";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
 
-// ✅ VERIFIED: Real Conversion ID for WarehouseShed Pune
 const GA_MEASUREMENT_ID = "AW-18093608462"; 
 
 export default function RootLayout({
@@ -22,34 +21,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [userIp, setUserIp] = useState("");
 
-  /**
-   * ✅ Close logic: 
-   * Sets a session flag so the popup stays closed during refreshes.
-   * Session storage clears when the tab/browser is closed.
-   */
   const closePopup = () => {
     sessionStorage.setItem("popup_dismissed", "true");
     setIsPopupOpen(false);
   };
 
   useEffect(() => {
-    const initializePopup = async () => {
-      // 1. Check if user already dismissed it in this session (Tab)
+    const initializePopup = () => {
       const isDismissed = sessionStorage.getItem("popup_dismissed");
       if (isDismissed) return;
 
-      try {
-        // 2. Fetch IP silently for lead tracking
-        const ipRes = await fetch("https://api.ipify.org?format=json");
-        const { ip } = await ipRes.json();
-        setUserIp(ip);
-      } catch (err) {
-        console.error("IP Fetch Error:", err);
-      }
-
-      // 3. Trigger popup after a small delay (3s) once site is loaded
+      // Popup triggers after 3 seconds - pure logic, no external API calls
       const timer = setTimeout(() => {
         setIsPopupOpen(true);
       }, 3000);
@@ -57,7 +40,6 @@ export default function RootLayout({
       return () => clearTimeout(timer);
     };
 
-    // Ensure logic runs only after "Complete Loading"
     if (document.readyState === "complete") {
       initializePopup();
     } else {
@@ -72,7 +54,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
         
-        {/* Global Google Tag */}
         <Script 
           strategy="afterInteractive" 
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} 
@@ -95,7 +76,6 @@ export default function RootLayout({
                   'value': 1.0,
                   'currency': 'INR'
                 });
-                console.log("Google Ads Lead Captured Successfully");
               }
             }
           `}
@@ -106,10 +86,7 @@ export default function RootLayout({
         
         <AnimatePresence mode="wait">
           {isPopupOpen && (
-            <ContactFormPopup 
-              onClose={closePopup} 
-              userIp={userIp} 
-            />
+            <ContactFormPopup onClose={closePopup} />
           )}
         </AnimatePresence>
 
