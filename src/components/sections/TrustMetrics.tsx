@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Users, CheckCircle, Trophy, TrendingUp } from 'lucide-react';
 
-const stats = [
+const achievements = [
   { 
     label: 'Managed in Pune MIDC', 
     value: '120+', 
@@ -31,7 +31,7 @@ const stats = [
   },
 ];
 
-const StatsSection = () => {
+const TrustMetrics = () => {
   return (
     <section className="py-16 md:py-24 bg-slate-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
@@ -64,7 +64,7 @@ const StatsSection = () => {
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User Profile" />
                   </div>
                 ))}
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-600 flex items-center justify-center text-[10px] font-black text-white">
@@ -77,9 +77,9 @@ const StatsSection = () => {
             </div>
           </motion.div>
 
-          {/* --- Stats Grid --- */}
+          {/* --- Achievements Grid --- */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-            {stats.map((stat, idx) => (
+            {achievements.map((item, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
@@ -89,17 +89,17 @@ const StatsSection = () => {
                 className="bg-slate-900 p-8 md:p-10 rounded-[2.5rem] text-white relative overflow-hidden group hover:bg-blue-600 transition-colors duration-500"
               >
                 <div className="relative z-10">
-                  <stat.icon className="text-[#fd610d] group-hover:text-white mb-6 transition-colors" size={32} />
-                  <p className="text-4xl md:text-5xl font-black tracking-tighter mb-2">{stat.value}</p>
+                  <item.icon className="text-[#fd610d] group-hover:text-white mb-6 transition-colors" size={32} />
+                  <p className="text-4xl md:text-5xl font-black tracking-tighter mb-2">{item.value}</p>
                   <p className="text-sm font-black uppercase tracking-widest text-white/90 leading-tight">
-                    {stat.label}
+                    {item.label}
                   </p>
                   <p className="text-[10px] font-bold uppercase tracking-tight text-white/40 group-hover:text-white/70 mt-1">
-                    {stat.sub}
+                    {item.sub}
                   </p>
                 </div>
                 {/* Background Accent */}
-                <stat.icon className="absolute -bottom-8 -right-8 text-white/5 group-hover:text-white/10 transition-colors" size={180} />
+                <item.icon className="absolute -bottom-8 -right-8 text-white/5 group-hover:text-white/10 transition-colors" size={180} />
               </motion.div>
             ))}
           </div>
@@ -111,4 +111,4 @@ const StatsSection = () => {
   );
 };
 
-export default StatsSection;
+export default TrustMetrics;
