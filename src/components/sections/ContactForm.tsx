@@ -29,6 +29,13 @@ interface PopupProps {
   initialIsSuccess?: boolean;
 }
 
+// Extend Window interface for the global helper we defined in layout
+declare global {
+  interface Window {
+    captureLead?: () => void;
+  }
+}
+
 export default function ContactFormPopup({ 
   onClose, 
   propertyTitle, 
@@ -41,7 +48,6 @@ export default function ContactFormPopup({
   const [errorMessage, setErrorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // --- NEW: Capture UTM Tracking Data ---
   const [utmData, setUtmData] = useState({
     utm_source: '',
     utm_campaign: '',
@@ -58,7 +64,6 @@ export default function ContactFormPopup({
       gclid: params.get('gclid') || ''
     });
   }, []);
-  // --------------------------------------
 
   async function handleSubmit(formData: FormData) {
     setErrorMessage("");
@@ -75,12 +80,10 @@ export default function ContactFormPopup({
     formData.append("page_url", window.location.href);
     formData.append("property_title", propertyTitle || "General Inquiry");
     
-    // --- NEW: Append Tracking Data to Server Action ---
     formData.append("utm_source", utmData.utm_source);
     formData.append("utm_campaign", utmData.utm_campaign);
     formData.append("utm_term", utmData.utm_term);
     formData.append("gclid", utmData.gclid);
-    // --------------------------------------------------
     
     if (userIp) {
       formData.append("ip_address", userIp);
@@ -91,11 +94,16 @@ export default function ContactFormPopup({
         const result = await submitLead(formData);
         
         if (result.success) {
+          // ✅ PREVENT POPUP ON REFRESH: Mark as handled in session
+          sessionStorage.setItem("popup_dismissed", "true");
+
           if (result.duplicate) {
             setIsDuplicate(true);
             setIsSuccess(true);
           } else {
-            // SUCCESS: Redirect to Thank You page for Gtag conversion firing
+            // ✅ FIRE GOOGLE ADS CONVERSION: Use the helper from layout.tsx
+            if (window.captureLead) window.captureLead();
+            
             onClose(); 
             router.push('/thank-you?success=true');
           }

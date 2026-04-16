@@ -22,33 +22,31 @@ function getBrowserName(ua: string) {
 }
 
 /**
- * Checks if a lead already exists for a specific IP address.
+ * Still available if needed for other components, 
+ * though Layout now uses sessionStorage for performance.
  */
 export async function checkExistingLead(ip: string) {
   try {
     if (!ip) return { exists: false };
-
     const { data } = await supabase
       .from("enquiries")
       .select("id")
       .eq("ip_address", ip)
       .maybeSingle();
-
     return { exists: !!data };
   } catch (error) {
-    console.error("Check IP Error:", error);
     return { exists: false };
   }
 }
 
 /**
- * Processes the lead submission
+ * Processes the lead submission with UTM tracking and duplicate handling
  */
 export async function submitLead(formData: FormData) {
   try {
     const rawData = Object.fromEntries(formData);
     
-    // Honeypot check
+    // 1. Honeypot check (Spam Protection)
     if (rawData.website_url) {
       return { success: false, error: "Bot detected" };
     }
@@ -57,14 +55,14 @@ export async function submitLead(formData: FormData) {
     const browserName = getBrowserName(ua);
 
     /**
-     * Schema-Perfect Mapping
-     * Added UTM and GCLID fields for Google Ads tracking
+     * Data Mapping
+     * Casting area_sqft to Number to ensure DB compatibility
      */
     const leadData = {
       full_name: rawData.full_name as string,
       phone: rawData.phone as string,
       email: (rawData.email as string) || null,
-      area_sqft: (rawData.area_sqft as string) || null, 
+      area_sqft: rawData.area_sqft ? Number(rawData.area_sqft) : null, 
       location: rawData.location as string,
       urgency: rawData.urgency as string,
       message: (rawData.message as string) || null,
@@ -82,25 +80,27 @@ export async function submitLead(formData: FormData) {
       gclid: (rawData.gclid as string) || null,
     };
 
-    // 1. Server-side Duplicate Check 
-    // Uses your unique_lead_entry constraint (phone, location, ip_address)
+    /**
+     * 2. Server-side Duplicate Check
+     * We check by Phone + Location. If a user tries to submit for the same location again,
+     * we update their tracking info instead of creating a messy duplicate.
+     */
     const { data: existingLead, error: checkError } = await supabase
       .from("enquiries")
       .select("id")
       .eq("phone", leadData.phone)
       .eq("location", leadData.location)
-      .eq("ip_address", leadData.ip_address)
       .maybeSingle();
 
     if (checkError) throw checkError;
 
     if (existingLead) {
-      // Update existing record with latest tracking data and set status to Urgent
+      // Update existing record with the latest UTMs and set status to Re-Inquiry
       const { error: updateError } = await supabase
         .from("enquiries")
         .update({ 
           ...leadData,
-          status: "Urgent", 
+          status: "Re-Inquiry", 
           updated_at: new Date().toISOString(), 
         })
         .eq("id", existingLead.id);
@@ -109,7 +109,7 @@ export async function submitLead(formData: FormData) {
       return { success: true, duplicate: true };
     }
 
-    // 2. Insert New Record
+    // 3. Insert New Record
     const { error: dbError } = await supabase
       .from("enquiries")
       .insert([
@@ -122,9 +122,8 @@ export async function submitLead(formData: FormData) {
     
     if (dbError) throw dbError;
 
-    // 3. Email Notification
+    // 4. Email Notification
     try {
-      // Pass the updated leadData including UTMs to your email template
       await sendLeadEmail({ ...leadData, lead_source: "Website Pop-up" });
     } catch (emailErr) {
       console.error("Email notification failed:", emailErr);

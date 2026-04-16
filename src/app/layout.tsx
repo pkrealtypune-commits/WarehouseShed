@@ -1,15 +1,14 @@
 "use client";
 
+import Script from "next/script";
 import { useState, useEffect } from "react";
 import { Inter, Archivo } from "next/font/google";
 import { AnimatePresence } from "framer-motion";
-import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContactFormPopup from "@/components/sections/ContactForm";
 import FloatingContact from "@/components/FloatingContact";
-import { checkExistingLead } from "@/app/actions/submit-lead";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const archivo = Archivo({ subsets: ["latin"], variable: "--font-display" });
@@ -24,42 +23,52 @@ export default function RootLayout({
 }>) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [userIp, setUserIp] = useState("");
-  const [shouldSuppress, setShouldSuppress] = useState(false);
 
-  const closePopup = () => setIsPopupOpen(false);
+  /**
+   * ✅ Close logic: 
+   * Sets a session flag so the popup stays closed during refreshes.
+   * Session storage clears when the tab/browser is closed.
+   */
+  const closePopup = () => {
+    sessionStorage.setItem("popup_dismissed", "true");
+    setIsPopupOpen(false);
+  };
 
   useEffect(() => {
-    async function initializePopupLogic() {
+    const initializePopup = async () => {
+      // 1. Check if user already dismissed it in this session (Tab)
+      const isDismissed = sessionStorage.getItem("popup_dismissed");
+      if (isDismissed) return;
+
       try {
-        // 1. Get User IP
+        // 2. Fetch IP silently for lead tracking
         const ipRes = await fetch("https://api.ipify.org?format=json");
         const { ip } = await ipRes.json();
         setUserIp(ip);
-
-        // 2. Check if lead exists for this IP to prevent double popups
-        const result = await checkExistingLead(ip);
-
-        if (result.exists) {
-          setShouldSuppress(true);
-        } else {
-          // 3. Set timer for first-time visitors
-          const timer = setTimeout(() => {
-            setIsPopupOpen(true);
-          }, 3000);
-          return () => clearTimeout(timer);
-        }
       } catch (err) {
-        console.error("Initialization error:", err);
+        console.error("IP Fetch Error:", err);
       }
-    }
 
-    initializePopupLogic();
+      // 3. Trigger popup after a small delay (3s) once site is loaded
+      const timer = setTimeout(() => {
+        setIsPopupOpen(true);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    };
+
+    // Ensure logic runs only after "Complete Loading"
+    if (document.readyState === "complete") {
+      initializePopup();
+    } else {
+      window.addEventListener("load", initializePopup);
+      return () => window.removeEventListener("load", initializePopup);
+    }
   }, []);
 
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full antialiased scroll-smooth`}>
       <head>
-        {/* Preconnect to improve script load speed for Chakan/Pune users */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
         
@@ -74,13 +83,11 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             
-            // Standard Config with Enhanced Conversions enabled
             gtag('config', '${GA_MEASUREMENT_ID}', {
               'send_page_view': true,
               'allow_enhanced_conversions': true
             });
 
-            // ✅ GLOBAL HELPER: Use this in ContactForm.tsx success handler
             window.captureLead = function() {
               if (typeof gtag === 'function') {
                 gtag('event', 'conversion', {
@@ -98,11 +105,10 @@ export default function RootLayout({
         <Navbar />
         
         <AnimatePresence mode="wait">
-          {isPopupOpen && !shouldSuppress && (
+          {isPopupOpen && (
             <ContactFormPopup 
               onClose={closePopup} 
               userIp={userIp} 
-              initialIsSuccess={shouldSuppress} 
             />
           )}
         </AnimatePresence>
